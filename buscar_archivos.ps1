@@ -152,6 +152,11 @@ function Show-Ayuda {
 function Format-Tiempo {
     param([TimeSpan]$tiempo)
     
+    # Manejar valores NULL o vacíos
+    if ($null -eq $tiempo -or $tiempo -eq [TimeSpan]::Zero) {
+        return "00:00"
+    }
+    
     if ($tiempo.Hours -gt 0) {
         return "{0:00}:{1:00}:{2:00}" -f $tiempo.Hours, $tiempo.Minutes, $tiempo.Seconds
     }

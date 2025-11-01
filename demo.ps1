@@ -2,10 +2,6 @@
 # 🎯 DEMOSTRACIÓN COMPLETA - Advanced File Search Scripts v2.0
 # Ejecuta una serie de ejemplos para mostrar todas las capacidades del sistema
 
-Write-Host "🚀 DEMOSTRACIÓN AVANZADA DE BÚSQUEDA DE ARCHIVOS" -ForegroundColor Cyan
-Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host ""
-
 # Función para pausar entre demostraciones
 function Wait-Demo {
     param([string]$Message = "Presiona Enter para continuar...")
@@ -13,6 +9,10 @@ function Wait-Demo {
     Read-Host | Out-Null
     Write-Host ""
 }
+
+Write-Host "🚀 DEMOSTRACIÓN AVANZADA DE BÚSQUEDA DE ARCHIVOS" -ForegroundColor Cyan
+Write-Host "===============================================" -ForegroundColor Cyan
+Write-Host ""
 
 try {
     # Demo 1: Búsqueda básica
