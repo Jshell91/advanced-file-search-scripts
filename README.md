@@ -1,6 +1,12 @@
-# 🔍 Scripts de Búsqueda de Archivos
+# 🔍 Advanced File Search Scripts
 
-Una colección de scripts para buscar archivos y carpetas en todo el sistema con informes detallados.
+[![Version](https://img.shields.io/badge/version-v2.0.0-blue.svg)](https://github.com/yourusername/advanced-file-search-scripts/releases)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://docs.microsoft.com/en-us/powershell/)
+[![Bash](https://img.shields.io/badge/Bash-4.0%2B-green.svg)](https://www.gnu.org/software/bash/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
+
+Una colección avanzada de scripts para búsqueda inteligente de archivos con filtros sofisticados, protecciones automáticas y exportación de datos estructurados.
 
 ## 📁 Archivos incluidos:
 
@@ -190,31 +196,62 @@ Puedes modificar los scripts para:
 
 ## 🚀 **Roadmap y Versiones**
 
-### **v1.0 - Funcionalidades Base** ✅
-- ✅ Búsqueda básica con patrones
-- ✅ Informes detallados con estadísticas
-- ✅ Soporte para múltiples unidades
+### **v2.0.0 - Filtros Avanzados (ACTUAL)** ✅  
+- ✅ **Protecciones inteligentes** contra búsquedas masivas
+- ✅ **Filtros sofisticados** por tamaño, fecha y tipo
+- ✅ **Export CSV** para análisis profesional
+- ✅ **Modo silencioso** para automatización
+- ✅ **Control preciso** de límites de resultados
+- ✅ **Búsqueda dirigida** por unidad específica
 
-### **v2.0 - Filtros Avanzados (ACTUAL)** ✅  
-- ✅ Filtros por tamaño, fecha y tipo
-- ✅ Protecciones contra búsquedas masivas
-- ✅ Control de límite de resultados
-- ✅ Modo silencioso para automatización
-- ✅ Export CSV para análisis
-- ✅ Búsqueda en unidad específica
+### **v3.0.0 - Interactividad Avanzada** 🔄 *(Q1 2026)*
+- 🔄 **Modo interactivo** con menús dinámicos
+- 🔄 **Export HTML** con visualizaciones gráficas  
+- 🔄 **Búsqueda por contenido** de archivos
+- 🔄 **Configuración persistente** con perfiles
+- 🔄 **Historial inteligente** de búsquedas
 
-### **v3.0 - Próximas Funcionalidades** 🔄
-- 🔄 Modo interactivo con menús
-- 🔄 Export HTML con visualizaciones
-- 🔄 Búsqueda por contenido de archivos
-- 🔄 Configuración persistente
-- 🔄 Historial de búsquedas
+### **v4.0.0 - Integración Empresarial** 📋 *(Q2 2026)*
+- 📋 **Dashboard visual** con métricas en tiempo real
+- 📋 **Integración Windows Explorer** con menús contextuales
+- 📋 **Automatización avanzada** con tareas programadas
+- 📋 **API REST** para integración con sistemas empresariales
 
-### **v4.0 - Funcionalidades Avanzadas** 📋
-- 📋 Dashboard visual con gráficos
-- 📋 Integración con Windows Explorer
-- 📋 Tareas programadas automáticas
-- 📋 API REST para integración
+> 📋 **Ver historial completo**: [`CHANGELOG.md`](CHANGELOG.md) - Registro detallado de todas las versiones, mejoras y estadísticas del proyecto.
+
+---
+
+## 📦 **Instalación Rápida**
+
+### **Windows (PowerShell):**
+```powershell
+# Clonar repositorio
+git clone https://github.com/yourusername/advanced-file-search-scripts.git
+cd advanced-file-search-scripts
+
+# Ejecutar directamente
+.\buscar_archivos.ps1 -Help
+```
+
+### **Linux/macOS (Bash):**
+```bash
+# Clonar repositorio
+git clone https://github.com/yourusername/advanced-file-search-scripts.git
+cd advanced-file-search-scripts
+
+# Hacer ejecutable
+chmod +x buscar_archivos.sh
+
+# Ejecutar
+./buscar_archivos.sh --help
+```
+
+### **Descarga Directa:**
+- 📥 [**Releases**](https://github.com/yourusername/advanced-file-search-scripts/releases) - Versiones estables
+- 📋 [**CHANGELOG.md**](CHANGELOG.md) - Historial completo de versiones  
+- 🛠️ [**MEJORAS_PENDIENTES.md**](MEJORAS_PENDIENTES.md) - Roadmap detallado
+
+---
 
 ## 📄 **Licencia**
 MIT License - Libre para uso personal y comercial
