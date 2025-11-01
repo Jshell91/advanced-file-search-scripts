@@ -1,0 +1,61 @@
+# 🚫 Archivos de reportes temporales
+*.log
+busqueda_*.log
+busqueda_*.csv
+
+# 📁 Carpetas de reportes
+temp/
+reports/
+
+# 🖥️ Archivos del sistema Windows
+Thumbs.db
+Desktop.ini
+*.lnk
+
+# 💻 Archivos de PowerShell
+*.ps1xml
+*.psd1
+
+# 📝 Archivos de respaldo y temporales
+*.bak
+*.tmp
+*.temp
+*~
+*.swp
+*.swo
+
+# 🔧 Archivos de configuración local
+config.local.json
+.env
+.env.local
+
+# 📊 Archivos de datos grandes
+*.dat
+*.bin
+
+# 🗃️ Carpetas de cache
+.cache/
+cache/
+
+# 📂 Archivos de VS Code específicos del usuario
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# ⚡ Archivos de ejecución
+*.exe
+*.msi
+
+# 📋 Logs de instalación y debugging
+install.log
+debug.log
+error.log
+
+# 🎯 Archivos específicos de testing
+test_results/
+*.test.ps1
+
+# 📈 Archivos de métricas y estadísticas
+metrics/
+stats/
+performance/
