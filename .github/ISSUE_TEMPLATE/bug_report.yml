@@ -1,0 +1,118 @@
+name: 🐛 Bug Report
+description: Reporta un bug o problema en los scripts de búsqueda
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias por reportar este bug! 🙏
+        
+        Por favor, proporciona la información solicitada para ayudarnos a resolver el problema rápidamente.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Verificación previa
+      description: Confirma que has revisado estos puntos antes de crear el issue
+      options:
+        - label: He buscado en los issues existentes y no hay uno similar
+          required: true
+        - label: He leído la documentación en README.md
+          required: true
+        - label: Estoy usando una versión soportada del script
+          required: true
+
+  - type: dropdown
+    id: script-type
+    attributes:
+      label: Tipo de Script
+      description: ¿En qué script ocurre el problema?
+      options:
+        - buscar_archivos.ps1 (PowerShell)
+        - buscar_archivos.sh (Bash)
+        - buscar_simple.sh (Bash simple)
+      validations:
+        required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión del Script
+      description: ¿Qué versión del script estás usando?
+      placeholder: "v2.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: Información del Sistema
+      description: Proporciona detalles de tu sistema
+      placeholder: |
+        - OS: Windows 11 / Ubuntu 22.04 / macOS 13
+        - PowerShell Version: 5.1 / 7.3
+        - Bash Version: 4.4 / 5.1
+      value: "OS: \nPowerShell/Bash Version: "
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: ¿Qué ocurrió?
+      description: Describe el problema que experimentaste
+      placeholder: Describe claramente el comportamiento inesperado
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Comportamiento Esperado
+      description: ¿Qué esperabas que ocurriera?
+      placeholder: Describe qué debería haber pasado
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Pasos para Reproducir
+      description: Lista los pasos exactos para reproducir el problema
+      placeholder: |
+        1. Ejecutar comando: `.\buscar_archivos.ps1 -Patron "*.txt"`
+        2. En directorio: `C:\Users\test`
+        3. Ver error: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: command-used
+    attributes:
+      label: Comando Ejecutado
+      description: El comando exacto que causó el problema
+      placeholder: ".\buscar_archivos.ps1 -Patron '*.txt' -Ruta 'C:\test' -MaxResults 100"
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Salida de Error
+      description: Copia y pega cualquier mensaje de error o salida inesperada
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Contexto Adicional
+      description: Cualquier información adicional que pueda ser relevante
+      placeholder: |
+        - ¿El problema ocurre siempre o solo a veces?
+        - ¿Hay algún patrón en cuando ocurre?
+        - ¿Funciona en otros directorios/situaciones?
+    validations:
+      required: false

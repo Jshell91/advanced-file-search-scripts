@@ -1,0 +1,137 @@
+name: 💡 Feature Request
+description: Sugiere una nueva característica o mejora
+title: "[FEATURE] "
+labels: ["enhancement", "feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias por sugerir una mejora! 🚀
+        
+        Ayúdanos a entender tu propuesta para evaluar su implementación.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Verificación previa
+      options:
+        - label: He revisado el roadmap en CHANGELOG.md para ver si ya está planificado
+          required: true
+        - label: He buscado en los issues existentes por ideas similares
+          required: true
+        - label: Esta mejora beneficiaría a múltiples usuarios
+          required: true
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Categoría de la Mejora
+      description: ¿Qué tipo de mejora propones?
+      options:
+        - Nueva funcionalidad de búsqueda
+        - Mejora de rendimiento
+        - Nueva opción de exportación
+        - Mejora de seguridad
+        - Mejor compatibilidad
+        - Mejora de documentación
+        - Otra (especificar en descripción)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad Sugerida
+      description: ¿Qué tan importante consideras esta mejora?
+      options:
+        - Crítica (funcionalidad básica rota)
+        - Alta (mejora significativa de usabilidad)
+        - Media (mejora útil pero no esencial)
+        - Baja (nice-to-have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Problema a Resolver
+      description: ¿Qué problema actual resolverías con esta mejora?
+      placeholder: |
+        Describe el problema o limitación que experimentas actualmente.
+        ¿Por qué es importante resolver esto?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Solución Propuesta
+      description: Describe tu idea para resolver el problema
+      placeholder: |
+        ¿Cómo funcionaría esta nueva característica?
+        ¿Qué comandos o parámetros nuevos agregarías?
+        
+        Ejemplo:
+        .\buscar_archivos.ps1 -Patron "*.log" -FechaDesde "2025-01-01" -FechaHasta "2025-11-01"
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Casos de Uso
+      description: Proporciona ejemplos específicos de cuándo usarías esta mejora
+      placeholder: |
+        1. Caso de uso 1: ...
+        2. Caso de uso 2: ...
+        3. Caso de uso 3: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: ¿Has considerado otras formas de resolver este problema?
+      placeholder: |
+        - Alternativa 1: ...
+        - Alternativa 2: ...
+        - ¿Por qué la solución propuesta es mejor?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: implementation-complexity
+    attributes:
+      label: Complejidad Estimada
+      description: ¿Qué tan complejo crees que sería implementar esto?
+      options:
+        - Simple (cambios menores de código)
+        - Moderado (nueva lógica pero no afecta arquitectura)
+        - Complejo (cambios significativos en múltiples archivos)
+        - No estoy seguro
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Consideraciones de Compatibilidad
+      description: Marca las consideraciones importantes
+      options:
+        - label: Esta mejora debería funcionar en PowerShell y Bash
+        - label: Debe mantener compatibilidad con versiones anteriores
+        - label: Puede requerir cambios en la documentación
+        - label: Podría necesitar nuevos tests
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Información Adicional
+      description: Cualquier contexto adicional, capturas de pantalla, o referencias
+      placeholder: |
+        - ¿Has visto esta funcionalidad en otras herramientas?
+        - ¿Hay algún estándar o convención a seguir?
+        - ¿Tienes mockups o ejemplos de la interfaz propuesta?
+    validations:
+      required: false
