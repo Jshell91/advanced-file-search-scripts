@@ -39,7 +39,7 @@
 - [x] **Advertencias inteligentes** ✅ **IMPLEMENTADO v2.0**
   - Detectar patrones peligrosos como `"*"` y `"*.*"`
   - Confirmar antes de ejecutar búsquedas masivas
-- [ ] **Barra de progreso**
+- [x] **Barra de progreso** ✅ **IMPLEMENTADO v2.1**
   - Mostrar progreso en búsquedas largas
   - Estimación de tiempo restante
 - [x] **Cancelación segura** ✅ **IMPLEMENTADO v2.0**
@@ -206,7 +206,8 @@
 - ⚡ **Rendimiento optimizado** - Se detiene al alcanzar límite configurado
 - 🔇 **Modo enterprise** - Silencioso para automatización
 - 📋 **Informes completos** - Estadísticas por unidad y globales
-- 🌍 **Cross-platform** - PowerShell y Bash equivalentes
+- � **Barra de progreso visual** - Progreso en tiempo real con Write-Progress + texto
+- �🌍 **Cross-platform** - PowerShell y Bash equivalentes
 
 ---
 
