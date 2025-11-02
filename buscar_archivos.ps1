@@ -361,7 +361,9 @@ Write-Host $informeFinal
 
 # Mostrar estadísticas por unidad
 foreach ($unidad in $unidades) {
-    $linea = "{0,-10}: {1,5} archivos ({2})" -f $unidad, $ConteosUnidad[$unidad], (Format-Tiempo $TiemposUnidad[$unidad])
+    $tiempo = if ($TiemposUnidad.ContainsKey($unidad)) { $TiemposUnidad[$unidad] } else { New-TimeSpan }
+    $conteo = if ($ConteosUnidad.ContainsKey($unidad)) { $ConteosUnidad[$unidad] } else { 0 }
+    $linea = "{0,-10}: {1,5} archivos ({2})" -f $unidad, $conteo, (Format-Tiempo $tiempo)
     Write-Host $linea
 }
 
@@ -395,7 +397,9 @@ ESTADÍSTICAS POR UNIDAD:
 $resumenCompleto | Out-File -FilePath $ArchivoReporte -Append -Encoding UTF8
 
 foreach ($unidad in $unidades) {
-    $linea = "{0,-10}: {1,5} archivos ({2})" -f $unidad, $ConteosUnidad[$unidad], (Format-Tiempo $TiemposUnidad[$unidad])
+    $tiempo = if ($TiemposUnidad.ContainsKey($unidad)) { $TiemposUnidad[$unidad] } else { New-TimeSpan }
+    $conteo = if ($ConteosUnidad.ContainsKey($unidad)) { $ConteosUnidad[$unidad] } else { 0 }
+    $linea = "{0,-10}: {1,5} archivos ({2})" -f $unidad, $conteo, (Format-Tiempo $tiempo)
     $linea | Out-File -FilePath $ArchivoReporte -Append -Encoding UTF8
 }
 
