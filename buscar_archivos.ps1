@@ -11,6 +11,7 @@ param(
     [int]$MaxResults = 1000,        # Límite máximo de archivos a mostrar
     [switch]$Quiet,                 # Modo silencioso (solo mostrar resumen)
     [switch]$ExportCSV,             # Exportar resultados a CSV
+    [switch]$NoProgress,            # Desactivar barra de progreso
     [string[]]$FileTypes = @(),     # Ej: @("pdf","docx","xlsx")
     [string[]]$ExcludePaths = @(),  # Rutas a excluir
     [switch]$Help
@@ -137,6 +138,7 @@ function Show-Ayuda {
     Write-Host "  -MaxResults <número>    Límite de archivos a mostrar (por defecto: 1000)"
     Write-Host "  -Quiet                  Modo silencioso (solo mostrar resumen final)"
     Write-Host "  -ExportCSV              Exportar resultados a archivo CSV"
+    Write-Host "  -NoProgress             Desactivar barra de progreso (modo clásico)"
     Write-Host "  -FileTypes <tipos>      Extensiones específicas (ej: @('pdf','docx','xlsx'))"
     Write-Host "  -ExcludePaths <rutas>   Excluir carpetas (ej: @('temp','cache','logs'))"
     Write-Host "  -Help                   Mostrar esta ayuda"
@@ -166,6 +168,35 @@ function Format-Tiempo {
     else {
         return "$($tiempo.Seconds) segundos"
     }
+}
+
+# Función para mostrar barra de progreso
+function Show-ProgressBar {
+    param(
+        [string]$Activity,
+        [string]$Status,
+        [int]$PercentComplete,
+        [int]$CurrentCount,
+        [int]$TotalCount,
+        [TimeSpan]$ElapsedTime,
+        [string]$CurrentItem = ""
+    )
+    # Usar tanto Write-Progress como texto visible
+    $statusText = $Status
+    if ($CurrentCount -ne $null -and $TotalCount -gt 0) { $statusText += " - $CurrentCount/$TotalCount" }
+    if ($CurrentItem) { $statusText += " - $CurrentItem" }
+
+    # Mostrar Write-Progress (barra en parte superior del terminal)
+    Write-Progress -Activity $Activity -Status $statusText -PercentComplete $PercentComplete -Id 1
+    
+    # También mostrar línea de texto visible
+    $barLength = 20
+    $filledLength = [math]::Floor($barLength * $PercentComplete / 100)
+    $emptyLength = $barLength - $filledLength
+    $bar = "█" * $filledLength + "░" * $emptyLength
+    $timeStr = "$(Format-Tiempo $ElapsedTime)"
+    
+    Write-Host "[$bar] $PercentComplete% | $Activity | $statusText | $timeStr" -ForegroundColor Cyan
 }
 
 # Mostrar ayuda si se solicita
@@ -246,9 +277,20 @@ if (-not $Quiet) {
     Write-Host ""
 }
 
+# Inicializar variables de progreso
+$unidadActual = 0
+$totalUnidades = $unidades.Count
+$inicioGlobal = Get-Date
+
 # Procesar cada unidad
 foreach ($unidad in $unidades) {
-    if (-not $Quiet) {
+    $unidadActual++
+    
+    if (-not $Quiet -and -not $NoProgress) {
+        # Mostrar progreso inicial
+        $tiempoTranscurrido = (Get-Date) - $inicioGlobal
+        Show-ProgressBar -Activity "Iniciando busqueda en $unidad" -Status "Preparando..." -PercentComplete 0 -CurrentCount 0 -TotalCount $MaxResults -ElapsedTime $tiempoTranscurrido
+    } elseif (-not $Quiet) {
         Write-Host "Procesando: $unidad"
         Write-Host "--------------------"
     }
@@ -270,6 +312,14 @@ foreach ($unidad in $unidades) {
             if ($ArchivosEncontrados -ge $MaxResults) {
                 $MaxResultsReached = $true
                 break
+            }
+            
+            # Mostrar progreso: siempre al inicio, cada 50 archivos, y en archivos importantes
+            if (-not $NoProgress -and -not $Quiet -and ($ArchivosEncontrados -eq 1 -or $ArchivosEncontrados % 50 -eq 0 -or $ArchivosEncontrados -ge $MaxResults - 5)) {
+                $tiempoTranscurrido = (Get-Date) - $inicioGlobal
+                $porcentaje = [math]::Min(90, ($ArchivosEncontrados * 90 / $MaxResults))
+                
+                Show-ProgressBar -Activity "Buscando en $unidad" -Status "Archivos procesados" -PercentComplete $porcentaje -CurrentCount $ArchivosEncontrados -TotalCount $MaxResults -ElapsedTime $tiempoTranscurrido
             }
             
             # Aplicar filtros
@@ -309,6 +359,14 @@ foreach ($unidad in $unidades) {
         # Calcular tiempo para esta unidad
         $finUnidad = Get-Date
         $TiemposUnidad[$unidad] = $finUnidad - $inicioUnidad
+        
+        # Actualizar progreso al completar unidad
+        if (-not $NoProgress -and -not $Quiet) {
+            $tiempoTranscurrido = (Get-Date) - $inicioGlobal
+            $porcentajeGlobal = $unidadActual * 100 / $totalUnidades
+            Show-ProgressBar -Activity "Completado $unidad" -Status "Unidad procesada" -PercentComplete $porcentajeGlobal -CurrentCount $ArchivosEncontrados -TotalCount $MaxResults -ElapsedTime $tiempoTranscurrido
+            Write-Host ""  # Nueva línea después de completar unidad
+        }
         
         if (-not $Quiet) {
             Write-Host "Archivos en $unidad`: $($ConteosUnidad[$unidad])"
@@ -356,6 +414,14 @@ Tiempo total transcurrido: $(Format-Tiempo $tiempoTotal)
 DESGLOSE POR UNIDAD:
 -------------------
 "@
+
+# Mostrar progreso final al 100%
+if (-not $NoProgress -and -not $Quiet) {
+    $tiempoTotal = (Get-Date) - $inicioGlobal
+    Show-ProgressBar -Activity "COMPLETADO - Busqueda finalizada" -Status "Procesamiento terminado" -PercentComplete 100 -CurrentCount $TotalArchivos -TotalCount $MaxResults -ElapsedTime $tiempoTotal
+    Write-Host ""
+    Write-Host ""
+}
 
 Write-Host $informeFinal
 
