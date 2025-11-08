@@ -11,11 +11,16 @@ param(
     [int]$MaxResults = 1000,        # Límite máximo de archivos a mostrar
     [switch]$Quiet,                 # Modo silencioso (solo mostrar resumen)
     [switch]$ExportCSV,             # Exportar resultados a CSV
+    [switch]$ExportHTML,            # Exportar reporte HTML con gráficos
+    [switch]$ExportJSON,            # Exportar datos estructurados en formato JSON
     [switch]$NoProgress,            # Desactivar barra de progreso
     [string[]]$FileTypes = @(),     # Ej: @("pdf","docx","xlsx")
     [string[]]$ExcludePaths = @(),  # Rutas a excluir
     [switch]$Help
 )
+
+# Configurar codificación UTF-8 para mostrar correctamente acentos y caracteres especiales
+$OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding = New-Object System.Text.UTF8Encoding
 
 # Función para convertir string de tamaño a bytes
 function ConvertTo-Bytes {
@@ -138,6 +143,8 @@ function Show-Ayuda {
     Write-Host "  -MaxResults <número>    Límite de archivos a mostrar (por defecto: 1000)"
     Write-Host "  -Quiet                  Modo silencioso (solo mostrar resumen final)"
     Write-Host "  -ExportCSV              Exportar resultados a archivo CSV"
+    Write-Host "  -ExportHTML             Exportar reporte HTML visual con gráficos"
+    Write-Host "  -ExportJSON             Exportar datos estructurados en formato JSON"
     Write-Host "  -NoProgress             Desactivar barra de progreso (modo clásico)"
     Write-Host "  -FileTypes <tipos>      Extensiones específicas (ej: @('pdf','docx','xlsx'))"
     Write-Host "  -ExcludePaths <rutas>   Excluir carpetas (ej: @('temp','cache','logs'))"
@@ -197,6 +204,259 @@ function Show-ProgressBar {
     $timeStr = "$(Format-Tiempo $ElapsedTime)"
     
     Write-Host "[$bar] $PercentComplete% | $Activity | $statusText | $timeStr" -ForegroundColor Cyan
+}
+
+# Función para generar reporte HTML con gráficos
+function Generate-HTMLReport {
+    param(
+        [array]$DatosArchivos,
+        [hashtable]$ConteosUnidad,
+        [hashtable]$TiemposUnidad,
+        [string]$Patron,
+        [string]$ArchivoHTML,
+        [int]$TotalArchivos,
+        [long]$TotalSize,
+        [TimeSpan]$TiempoTotal
+    )
+    
+    # Calcular estadísticas
+    $extensiones = $DatosArchivos | Group-Object 'Extensión' | Sort-Object Count -Descending | Select-Object -First 10
+    $unidadesStats = $ConteosUnidad.GetEnumerator() | Sort-Object Value -Descending
+    $archivosMasGrandes = $DatosArchivos | Sort-Object 'Tamaño (Bytes)' -Descending | Select-Object -First 5
+    
+    # CSS y JavaScript para gráficos
+    $htmlContent = @"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Búsqueda de Archivos - $Patron</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; border-bottom: 3px solid #3498db; padding-bottom: 15px; }
+        h2 { color: #34495e; margin-top: 30px; border-left: 4px solid #3498db; padding-left: 15px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; }
+        .stat-label { font-size: 0.9em; opacity: 0.9; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #3498db; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .progress-bar { background: #ecf0f1; border-radius: 10px; overflow: hidden; height: 20px; margin: 5px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3498db, #2ecc71); transition: width 0.3s ease; }
+        .file-link { color: #3498db; text-decoration: none; }
+        .file-link:hover { text-decoration: underline; }
+        .summary { background: #ecf0f1; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Reporte de Búsqueda de Archivos</h1>
+        
+        <div class="summary">
+            <strong>Patrón de búsqueda:</strong> $Patron<br>
+            <strong>Fecha de generación:</strong> $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss')<br>
+            <strong>Tiempo de búsqueda:</strong> $(Format-Tiempo $TiempoTotal)
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">$TotalArchivos</div>
+                <div class="stat-label">Archivos Encontrados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$(Format-FileSize $TotalSize)</div>
+                <div class="stat-label">Tamaño Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$($ConteosUnidad.Count)</div>
+                <div class="stat-label">Unidades Procesadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$(if ($TotalArchivos -gt 0) { Format-FileSize ($TotalSize / $TotalArchivos) } else { "0 bytes" })</div>
+                <div class="stat-label">Tamaño Promedio</div>
+            </div>
+        </div>
+
+        <h2>📊 Distribución por Tipos de Archivo</h2>
+        <canvas id="extensionsChart" class="chart-container"></canvas>
+
+        <h2>💽 Archivos por Unidad</h2>
+        <canvas id="unitsChart" class="chart-container"></canvas>
+"@
+
+    # Tabla de archivos más grandes
+    if ($archivosMasGrandes.Count -gt 0) {
+        $htmlContent += @"
+        <h2>📁 Archivos Más Grandes</h2>
+        <table>
+            <tr><th>Archivo</th><th>Tamaño</th><th>Fecha</th><th>Ubicación</th></tr>
+"@
+        foreach ($archivo in $archivosMasGrandes) {
+            $rutaCompleta = $archivo.'Ruta Completa'
+            $htmlContent += @"
+            <tr>
+                <td><a href="file:///$rutaCompleta" class="file-link">$($archivo.Nombre)</a></td>
+                <td>$($archivo.'Tamaño Formateado')</td>
+                <td>$($archivo.'Fecha Modificación')</td>
+                <td>$($archivo.Directorio)</td>
+            </tr>
+"@
+        }
+        $htmlContent += "</table>"
+    }
+
+    # JavaScript para gráficos
+    $htmlContent += @"
+        <script>
+        // Gráfico de extensiones
+        const extCtx = document.getElementById('extensionsChart').getContext('2d');
+        new Chart(extCtx, {
+            type: 'pie',
+            data: {
+                labels: [$(($extensiones | ForEach-Object { "'$($_.Name)'" }) -join ', ')],
+                datasets: [{
+                    data: [$(($extensiones | ForEach-Object { $_.Count }) -join ', ')],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Distribución por Tipo de Archivo' }
+                }
+            }
+        });
+
+        // Gráfico de unidades
+        const unitsCtx = document.getElementById('unitsChart').getContext('2d');
+        new Chart(unitsCtx, {
+            type: 'bar',
+            data: {
+                labels: [$(($unidadesStats | ForEach-Object { "'$($_.Key)'" }) -join ', ')],
+                datasets: [{
+                    label: 'Archivos por Unidad',
+                    data: [$(($unidadesStats | ForEach-Object { $_.Value }) -join ', ')],
+                    backgroundColor: '#3498db'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Archivos por Unidad de Disco' }
+                }
+            }
+        });
+        </script>
+    </div>
+</body>
+</html>
+"@
+
+    # Guardar archivo HTML
+    [System.IO.File]::WriteAllText($ArchivoHTML, $htmlContent, [System.Text.Encoding]::UTF8)
+}
+
+# Función para generar reporte JSON estructurado
+function Generate-JSONReport {
+    param(
+        [array]$DatosArchivos,
+        [hashtable]$ConteosUnidad,
+        [hashtable]$TiemposUnidad,
+        [string]$Patron,
+        [string]$ArchivoJSON,
+        [int]$TotalArchivos,
+        [long]$TotalSize,
+        [TimeSpan]$TiempoTotal
+    )
+    
+    # Construir estadísticas para JSON
+    $extensiones = $DatosArchivos | Group-Object 'Extensión' | ForEach-Object {
+        @{
+            extension = $_.Name
+            count = $_.Count
+            percentage = [math]::Round(($_.Count / $TotalArchivos) * 100, 2)
+        }
+    } | Sort-Object count -Descending
+    
+    $unidadesStats = @()
+    foreach ($unidad in $ConteosUnidad.Keys) {
+        $unidadesStats += @{
+            drive = $unidad
+            fileCount = $ConteosUnidad[$unidad]
+            searchTime = $(Format-Tiempo $TiemposUnidad[$unidad])
+            searchTimeSeconds = $TiemposUnidad[$unidad].TotalSeconds
+        }
+    }
+    
+    # Archivos más grandes (top 10)
+    $archivosMasGrandes = $DatosArchivos | Sort-Object 'Tamaño (Bytes)' -Descending | Select-Object -First 10 | ForEach-Object {
+        @{
+            name = $_.'Nombre'
+            fullPath = $_.'Ruta Completa'
+            directory = $_.'Directorio'
+            sizeBytes = $_.'Tamaño (Bytes)'
+            sizeFormatted = $_.'Tamaño Formateado'
+            extension = $_.'Extensión'
+            lastModified = $_.'Fecha Modificación'
+        }
+    }
+    
+    # Estructura principal del JSON
+    $jsonData = @{
+        metadata = @{
+            generatedAt = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss.fffZ'
+            searchPattern = $Patron
+            generator = "Advanced File Search Scripts v2.0"
+            reportType = "JSON_EXPORT"
+        }
+        summary = @{
+            totalFiles = $TotalArchivos
+            totalSizeBytes = $TotalSize
+            totalSizeFormatted = Format-FileSize $TotalSize
+            averageSizeBytes = if ($TotalArchivos -gt 0) { [math]::Round($TotalSize / $TotalArchivos, 2) } else { 0 }
+            averageSizeFormatted = if ($TotalArchivos -gt 0) { Format-FileSize ($TotalSize / $TotalArchivos) } else { "0 bytes" }
+            unitsProcessed = $ConteosUnidad.Count
+            totalSearchTimeSeconds = $TiempoTotal.TotalSeconds
+            totalSearchTimeFormatted = Format-Tiempo $TiempoTotal
+        }
+        statistics = @{
+            filesByExtension = $extensiones
+            filesByDrive = $unidadesStats
+        }
+        files = @{
+            largestFiles = $archivosMasGrandes
+            allFiles = $DatosArchivos | ForEach-Object {
+                @{
+                    name = $_.'Nombre'
+                    fullPath = $_.'Ruta Completa'
+                    directory = $_.'Directorio'
+                    sizeBytes = $_.'Tamaño (Bytes)'
+                    sizeFormatted = $_.'Tamaño Formateado'
+                    extension = $_.'Extensión'
+                    lastModified = $_.'Fecha Modificación'
+                }
+            }
+        }
+        performance = @{
+            searchStartTime = (Get-Date).AddSeconds(-$TiempoTotal.TotalSeconds).ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            searchEndTime = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            driveSearchTimes = $unidadesStats
+        }
+    }
+    
+    # Convertir a JSON con formato legible
+    $jsonContent = $jsonData | ConvertTo-Json -Depth 10 -Compress:$false
+    
+    # Guardar archivo JSON
+    $jsonContent | Out-File -FilePath $ArchivoJSON -Encoding UTF8
 }
 
 # Mostrar ayuda si se solicita
@@ -336,7 +596,7 @@ foreach ($unidad in $unidades) {
                 $infoLinea | Out-File -FilePath $ArchivoReporte -Append -Encoding UTF8
                 
                 # Agregar al CSV si se solicitó
-                if ($ExportCSV) {
+                if ($ExportCSV -or $ExportHTML -or $ExportJSON) {
                     $DatosCSV += [PSCustomObject]@{
                         'Nombre' = $archivo.Name
                         'Ruta Completa' = $archivo.FullName
@@ -491,11 +751,48 @@ if ($ExportCSV -and $DatosCSV.Count -gt 0) {
     Write-Host "Archivo CSV generado: $ArchivoCSV" -ForegroundColor Green
 }
 
+# Generar reporte HTML si se solicitó
+if ($ExportHTML -and $TotalArchivos -gt 0) {
+    $ArchivoHTML = "$dirReporte\reporte_busqueda_$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+    try {
+        Generate-HTMLReport -DatosArchivos $DatosCSV -ConteosUnidad $ConteosUnidad -TiemposUnidad $TiemposUnidad -Patron $Patron -ArchivoHTML $ArchivoHTML -TotalArchivos $TotalArchivos -TotalSize $TotalSize -TiempoTotal $tiempoTotal
+        Write-Host ""
+        Write-Host "🌐 Reporte HTML generado: $ArchivoHTML" -ForegroundColor Green
+        Write-Host "   💡 Para abrir: start '$ArchivoHTML'" -ForegroundColor Cyan
+    }
+    catch {
+        Write-Host ""
+        Write-Host "❌ Error al generar reporte HTML: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+# Generar reporte JSON si se solicitó
+if ($ExportJSON -and $DatosCSV.Count -gt 0) {
+    $ArchivoJSON = "$dirReporte\datos_busqueda_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+    try {
+        Generate-JSONReport -DatosArchivos $DatosCSV -ConteosUnidad $ConteosUnidad -TiemposUnidad $TiemposUnidad -Patron $Patron -ArchivoJSON $ArchivoJSON -TotalArchivos $TotalArchivos -TotalSize $TotalSize -TiempoTotal $tiempoTotal
+        Write-Host ""
+        Write-Host "📄 Reporte JSON generado: $ArchivoJSON" -ForegroundColor Green
+        Write-Host "   💡 Datos estructurados para análisis y API" -ForegroundColor Cyan
+    }
+    catch {
+        Write-Host ""
+        Write-Host "❌ Error al generar reporte JSON: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
 Write-Host ""
+Write-Host "¡Búsqueda completada!" -ForegroundColor Green
+Write-Host "  • Informe detallado: $ArchivoReporte"
+
 if ($ExportCSV -and $DatosCSV.Count -gt 0) {
-    Write-Host "¡Búsqueda completada!" -ForegroundColor Green
-    Write-Host "  • Informe detallado: $ArchivoReporte" 
     Write-Host "  • Datos CSV: $ArchivoCSV"
-} else {
-    Write-Host "¡Búsqueda completada! Consulta el archivo $ArchivoReporte para el informe completo." -ForegroundColor Green
+}
+
+if ($ExportHTML -and $DatosCSV.Count -gt 0) {
+    Write-Host "  • Reporte HTML: $ArchivoHTML"
+}
+
+if ($ExportJSON -and $DatosCSV.Count -gt 0) {
+    Write-Host "  • Reporte JSON: $ArchivoJSON"
 }
